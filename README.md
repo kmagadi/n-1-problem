@@ -77,7 +77,7 @@ Advantages:
 
 ---
 
-### 3. Lazy Loading with Batch Fetching
+### 3. Lazy Loading with Batch Fetching(YET TO IMPLEMENT)
 
 Keeps relationships lazy but reduces query count using Hibernate batch fetching.
 
@@ -89,7 +89,7 @@ Advantages:
 
 ---
 
-### 4. DTO Projection
+### 4. DTO Projection(YET TO IMPLEMENT)
 
 Fetches only required data using projections instead of full entity loading.
 
@@ -101,7 +101,7 @@ Advantages:
 
 ---
 
-### 5. Pagination-Based Fetching
+### 5. Pagination-Based Fetching(YET TO IMPLEMENT)
 
 Splits large queries into smaller pages.
 
