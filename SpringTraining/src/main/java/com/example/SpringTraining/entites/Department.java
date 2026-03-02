@@ -1,7 +1,7 @@
 package com.example.SpringTraining.entites;
 
 import jakarta.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "departments")
@@ -14,7 +14,7 @@ public class Department {
     private String departmentName;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Student> students;
+    private Set<Student> students;
 
     public Department() {
     }
@@ -39,11 +39,11 @@ public class Department {
         this.departmentName = departmentName;
     }
 
-    public List<Student> getStudents() {
+    public Set<Student> getStudents() {
         return students;
     }
 
-    public void setStudents(List<Student> students) {
+    public void setStudents(Set<Student> students) {
         this.students = students;
     }
 }

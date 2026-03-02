@@ -1,5 +1,6 @@
 package com.example.SpringTraining.controller;
 
+import com.example.SpringTraining.config.QueryCounter;
 import com.example.SpringTraining.dto.DepartmentDTO;
 import com.example.SpringTraining.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * DepartmentController
@@ -21,34 +23,29 @@ import java.util.List;
 @RequestMapping("/api")
 public class DepartmentController {
 
-    @Autowired
-    private DepartmentService departmentService;
+    private final DepartmentService departmentService;
+    private final QueryCounter queryCounter;
 
-    /**
-     * GET /api/departments
-     *
-     * Retrieves all departments with their students and course counts
-     * Solves N+1 query problem using LEFT JOIN FETCH in repository
-     *
-     * Response format:
-     * [
-     *   {
-     *     "departmentName": "Computer Science",
-     *     "students": [
-     *       {
-     *         "studentName": "Rahul",
-     *         "coursesCount": 5
-     *       }
-     *     ]
-     *   }
-     * ]
-     *
-     * @return ResponseEntity with List of DepartmentDTO and HTTP status 200 OK
-     */
-    @GetMapping("/departments")
-    public ResponseEntity<List<DepartmentDTO>> getDepartments() {
-        List<DepartmentDTO> departments = departmentService.getAllDepartments();
-        return new ResponseEntity<>(departments, HttpStatus.OK);
+    public DepartmentController(DepartmentService departmentService,
+                                QueryCounter queryCounter) {
+        this.departmentService = departmentService;
+        this.queryCounter = queryCounter;
+    }
+
+    @GetMapping("/departments/join-fetch")
+    public ResponseEntity<?> getDepartments() {
+
+        queryCounter.reset();
+
+        List<DepartmentDTO> result = departmentService.getAllDepartments();
+
+        long queries = queryCounter.getQueryCount();
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "data", result,
+                        "queryCount", queries
+                )
+        );
     }
 }
-

@@ -1,7 +1,7 @@
 package com.example.SpringTraining.entites;
 
 import jakarta.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "students")
@@ -17,13 +17,13 @@ public class Student {
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "student_courses",
         joinColumns = @JoinColumn(name = "student_id"),
         inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    private List<Course> courses;
+    private Set<Course> courses;
 
     public Student() {
     }
@@ -56,11 +56,11 @@ public class Student {
         this.department = department;
     }
 
-    public List<Course> getCourses() {
+    public Set<Course> getCourses() {
         return courses;
     }
 
-    public void setCourses(List<Course> courses) {
+    public void setCourses(Set<Course> courses) {
         this.courses = courses;
     }
 }
