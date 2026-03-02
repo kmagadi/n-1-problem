@@ -1,6 +1,8 @@
 package com.example.SpringTraining.service;
 
+import com.example.SpringTraining.config.HibernateQueryCounter;
 import com.example.SpringTraining.dto.DepartmentDTO;
+import com.example.SpringTraining.dto.QueryMetricsResponse;
 import com.example.SpringTraining.dto.StudentDTO;
 import com.example.SpringTraining.entites.Department;
 import com.example.SpringTraining.repositories.DepartmentRepository;
@@ -8,34 +10,82 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final HibernateQueryCounter queryCounter;
 
-    public DepartmentService(DepartmentRepository departmentRepository) {
+    public DepartmentService(DepartmentRepository departmentRepository,
+                             HibernateQueryCounter queryCounter) {
         this.departmentRepository = departmentRepository;
+        this.queryCounter = queryCounter;
     }
 
-    public List<DepartmentDTO> getAllDepartments() {
-        List<Department> departments = departmentRepository.findAllWithStudentsAndCourses();
+    /*
+     * FETCH JOIN (already implemented)
+     */
+    public QueryMetricsResponse<DepartmentDTO> getUsingFetchJoin() {
 
-        return departments.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        queryCounter.reset();
+        long start = System.currentTimeMillis();
+
+        List<Department> departments =
+                departmentRepository.findAllWithStudentsAndCourses();
+
+        List<DepartmentDTO> result =
+                departments.stream().map(this::convertToDTO).toList();
+
+        long time = System.currentTimeMillis() - start;
+
+        return new QueryMetricsResponse<>(
+                result,
+                queryCounter.getQueryCount(),
+                time
+        );
     }
 
+    /*
+     * ENTITY GRAPH
+     */
+    public QueryMetricsResponse<DepartmentDTO> getUsingEntityGraph() {
+
+        queryCounter.reset();
+        long start = System.currentTimeMillis();
+
+        List<Department> departments = departmentRepository.findAll();
+
+        List<DepartmentDTO> result =
+                departments.stream().map(this::convertToDTO).toList();
+
+        long time = System.currentTimeMillis() - start;
+
+        return new QueryMetricsResponse<>(
+                result,
+                queryCounter.getQueryCount(),
+                time
+        );
+    }
+
+    /*
+     * Common DTO conversion
+     */
     private DepartmentDTO convertToDTO(Department department) {
+
         List<StudentDTO> studentDTOs = department.getStudents().stream()
                 .map(student -> new StudentDTO(
                         student.getStudentName(),
-                        student.getCourses() != null ? student.getCourses().size() : 0
+                        student.getCourses() != null
+                                ? student.getCourses().size()
+                                : 0
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
-        return new DepartmentDTO(department.getDepartmentName(), studentDTOs);
+        return new DepartmentDTO(
+                department.getDepartmentName(),
+                studentDTOs
+        );
     }
 }
